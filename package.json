@@ -1,0 +1,28 @@
+{
+  "name": "webpack5-learning",
+  "version": "1.0.0",
+  "description": "webpack5 学习",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LaughSun0513/webpack5-learning.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LaughSun0513/webpack5-learning/issues"
+  },
+  "homepage": "https://github.com/LaughSun0513/webpack5-learning#readme",
+  "devDependencies": {
+    "html-webpack-plugin": "^5.5.0",
+    "raw-loader": "^4.0.2",
+    "webpack": "^5.64.3",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.5.0"
+  }
+}
