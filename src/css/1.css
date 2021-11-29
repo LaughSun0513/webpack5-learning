@@ -1,0 +1,10 @@
+@import './2.css';
+
+body {
+    background-color: #000;
+}
+#background-url-container {
+    width: 800px;
+    height: 600px;
+    background: url('../images/011.png');
+}
