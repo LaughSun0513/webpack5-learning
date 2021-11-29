@@ -1,10 +1,13 @@
 # webpack5-learning
-
+- 基本安装
+- 支持基本html模板的打包和引入(html-webpack-plugin)
+- 支持css/less/sass(style-loader/css-loader/less/less-loader/node-sass/sass-loader)
+- 支持图片引入(file-loader/url-loader)
 ## 安装
 ```bash
 pnpm install 
 webpack 
-webpack-cli 
+webpack-cli
 webpack-dev-server 
 html-webpack-plugin
 ```
