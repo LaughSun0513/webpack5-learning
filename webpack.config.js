@@ -17,6 +17,8 @@ module.exports = {
         port: 8080,
         open: true,
         hot: true,
+        compress: true,
+        liveReload: true,
         devMiddleware: {
             writeToDisk: true,
             // dist/main.js --> http://localhost:8080/assets/main.js 可以通过该路径获取打包后的资源
@@ -25,7 +27,11 @@ module.exports = {
     },
     module: {
         rules: [
-            { test: /\.txt$/, use: 'raw-loader' },
+            // { test: /\.txt$/, use: 'raw-loader' },
+            {
+                test: /\.txt$/,
+                type: 'asset/source'
+            },
             {
                 test: /\.css$/i, use: ['style-loader', {
                     loader: 'css-loader',
@@ -56,7 +62,11 @@ module.exports = {
                 },
             },
             { test: /\.html$/i, use: ["html-loader"] },
-            { test: /\.jsx?$/i, use: ["babel-loader"] }
+            {
+                test: /\.(ts|js)x?$/,
+                use: ['babel-loader'],
+                exclude: /node_modules/,
+            }
         ]
     },
     plugins: [

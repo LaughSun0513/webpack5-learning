@@ -63,15 +63,122 @@ html-webpack-plugin
 }
 ```
 
-### 支持ES6/ES7/JSX
-> babel-loader
+#### type:asset
+[type:asset的文档](https://webpack.js.org/guides/asset-modules/)
+> asset/resource 替换file-loader 把图片拷贝到输出目录里去，返回一个输出后的路径，包括文件
 
-> @babel/cli babel的命令行工具，可不装，可通过npx babel来运行代码
+> asset/inline 替换url-loader的limit功能 不拷贝文件，直接把url变成base64字符串, parser.dataUrlCondition.maxSize代替
 
-> @babel/core 过程管理功能 把源代码变成AST 进行遍历和生成 并不清楚转换什么语法和语法如何转换
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.txt/,
+        type: 'asset',
+        parser: {
+         dataUrlCondition: {
+           maxSize: 4 * 1024 // 4kb
+         }
+       }
+      }
+    ]
+  }
+};
+```
 
-> @babel/preset-env  清楚转换什么语法和语法如何转换 例如ES6 -> ES5
+> asset/source 默认，处理文本 类似raw-loader 引入方式没有xx.default
 
-> @babel/plugin-transform-runtime 转译代码 运行在编译时
-> @babel/runtime-corejs3 运行在运行时
-js文件在babel转码后会生成很多helper函数(可能有大量重复)，polyfill会在全局变量上挂载目标浏览器缺失的功能，这个插件的作用是将 helper 和 polyfill 都改为从一个统一的地方引入，并且引入的对象和全局变量是完全隔离的
+```js
+// raw-loader
+const txt = require('./1.txt');
+document.querySelector('#app').innerHTML = txt.default;
+
+// asset/source
+const txt = require('./1.txt');
+document.querySelector('#app').innerHTML = txt;
+```
+
+### 支持ES6/ES7/JSX/装饰器模式等
+```js
+{
+    "@babel/cli": "^7.16.0",  // babel的命令行工具，可不装，可通过npx babel来运行代码
+    "@babel/core": "^7.16.0", // 过程管理功能 把源代码变成AST 进行遍历和生成 并不清楚转换什么语法和语法如何转换
+    "@babel/plugin-proposal-class-properties": "^7.16.0",
+    "@babel/plugin-proposal-decorators": "^7.16.4",
+    "@babel/plugin-transform-runtime": "^7.16.4",
+    "@babel/runtime-corejs3": "^7.16.3",
+    "@babel/preset-env": "^7.16.4",
+    "babel-loader": "^8.2.3",
+}
+```
+- @babel/core 
+- @babel/preset-env  清楚转换什么语法和语法如何转换 例如ES6 -> ES5
+
+```js
+{
+    "presets": [
+        ["@babel/preset-env", {
+            useBuiltIns: 'usage', // 按需加载corejs的包，比如用到了Promise，就只加载Promise的corejs包不会去加载Map的
+            corejs: '3.0',
+            targets: {
+                chrome: ">=58",
+                firefox: ">=58",
+                ie: ">=11"
+            }
+        }]
+    ],
+}
+// useBuiltIns: usage 
+// useBuiltIns: entry 
+// useBuiltIns: false
+```
+- [@babel/plugin-transform-runtime](https://babeljs.io/docs/en/babel-plugin-transform-runtime) 转译代码 运行在编译时
+- @babel/runtime-corejs3 运行在运行时
+> js文件在babel转码后会生成很多helper函数(可能有大量重复)，polyfill会在全局变量上挂载目标浏览器缺失的功能，这个插件的作用是将 helper 和 polyfill 都改为从一个统一的地方引入，并且引入的对象和全局变量是完全隔离的
+
+> 为什么会出现上面这俩包呢？
+
+个人的想法是，要兼容IE等低版本的浏览器，很多语法不支持，比如Promise/Set/Map/Array.includes
+就需要babel-polyfill自己去实现，但是这个包很大，里面其实是core-js，现在已经更新到3版本了
+我们不想在项目代码里面引入一些没用的polyfill增加体积，
+`require('babel-polyfill')` 这样太简单粗暴了, 
+实现原理其实是在全局对象或者内置对象的prototype上添加方法来实现，缺点是造成全局污染
+
+- [@babel/runtime](https://babeljs.io/docs/en/babel-runtime) 这是个工具函数的库，可以让babel的一些helpers的函数直接通过require引入，不需要每次都重复写
+
+
+
+> 问题: 在配置babel的过程中发现，如果不配置`exclude: /node_modules/`会导致报错, 
+怀疑原因是babel去编译node_modules里的包导致的
+```
+Html Webpack Plugin:
+  Error: Child compilation failed:
+  Module not found: Error: Can't resolve 'core-js/modules/es.regexp.exec.js'
+```
+```js
+// webpack.config.js
+{
+    test: /\.(ts|js)x?$/,
+    use: ['babel-loader'],
+    exclude: /node_modules/
+}
+
+// babel.config.js
+module.exports = {
+    "presets": [
+        ["@babel/preset-env", {
+            useBuiltIns: 'usage',
+            corejs: '3.0'
+        }]
+    ],
+    "plugins": [
+        ['@babel/plugin-transform-runtime', { corejs: 3}],
+        // 如果没有的功能，直接自己加babel插件即可
+        // 把类和对象装饰器编译成ES5
+        ["@babel/plugin-proposal-decorators", { legacy: true}],
+        // 转换静态类属性以及使用属性初始值化语法声明的属性
+        "@babel/plugin-proposal-class-properties"
+    ]
+}
+```
