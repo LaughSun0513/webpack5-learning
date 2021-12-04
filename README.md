@@ -130,9 +130,25 @@ document.querySelector('#app').innerHTML = txt;
     ],
 }
 // useBuiltIns: usage 
-// useBuiltIns: entry 
-// useBuiltIns: false
+// useBuiltIns: entry 根据配置的浏览器兼容性配置浏览器不兼容的polyfill，需要在入口文件加上 `import '@babel/polyfill'`, 会根据browserslist替换成浏览器不兼容的所有polyfill，如果core-js版本是3，需要将import '@babel/polyfill'` 改成 `import 'core-js/stable';import ''`
+// useBuiltIns: false 引入所有polyfill @babel/polyfill 无视配置的浏览器兼容
 ```
+```js
+useBuiltIns: entry
+// 入口文件引入
+import '@babel/polyfill'
+
+// core-js版本是3 入口文件要引入这俩 不引上面的
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
+```
+针对浏览器版本的兼容方式
+1.利用targets写死，如上
+2.使用polyfill-service，分析浏览器的UA实现自动加载所需要的polyfills
+```js
+<script src="https://polyfill.io/v3/polyfill.min.js"></script>
+```
+
 - [@babel/plugin-transform-runtime](https://babeljs.io/docs/en/babel-plugin-transform-runtime) 转译代码 运行在编译时
 - @babel/runtime-corejs3 运行在运行时
 > js文件在babel转码后会生成很多helper函数(可能有大量重复)，polyfill会在全局变量上挂载目标浏览器缺失的功能，这个插件的作用是将 helper 和 polyfill 都改为从一个统一的地方引入，并且引入的对象和全局变量是完全隔离的
